@@ -45,9 +45,10 @@ class OracleOfBacon
     # your code here: create the OracleOfBacon::Response object
   end
 
+  # Homework 1.5 - Part 3
   def make_uri_from_arguments
-    # your code here: set the @uri attribute to properly-escaped URI
-    #   constructed from the @from, @to, @api_key arguments
+    @uri = "http://oracleofbacon.org/cgi-bin/xml?enc=utf-8&" +
+      "p=#{CGI.escape(@api_key)}&a=#{CGI.escape(@from)}&b=#{CGI.escape(@to)}"
   end
       
   class Response
@@ -80,15 +81,18 @@ class OracleOfBacon
     end
     def parse_graph_response
       @type = :graph
-      @data = @doc.text.split(/\n/).compact.reject{ |x| x.empty? }.each { |x| x.strip! }
+      @data = parse_valid_response_data
     end
     def parse_spellcheck_response
       @type = :spellcheck
-      @data = @doc.text.split(/\n/).compact.reject{ |x| x.empty? }.each { |x| x.strip! }
+      @data = parse_valid_response_data
     end
     def parse_unknown_response
       @type = :unknown
       @data = 'Unknown response type'
+    end
+    def parse_valid_response_data
+      @doc.text.split(/\n/).compact.reject{ |x| x.empty? }.each { |x| x.strip! }
     end
   end
 end
