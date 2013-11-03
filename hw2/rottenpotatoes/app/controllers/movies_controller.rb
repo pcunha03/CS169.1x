@@ -7,18 +7,38 @@ class MoviesController < ApplicationController
   end
 
   def index
+    @all_ratings = Movie.all_ratings.keys #Todos los posibles
+    @filter_ratings = Hash.new 
     
-    if params[:sort] == "title"
-      @movies = Movie.order(:title)
-      @title_class = "hilite"
-    elsif params[:sort] == "release_date"
-      @movies = Movie.order(:release_date)
-      @release_date_class = "hilite"
+    #Si vienen parametros, modificar la sesion, sino dejar.
+    #Si no hay nada crear.
+    if session.has_key?(:ratings) && session[:ratings].size > 0 
+        if params.has_key?(:ratings)
+          session[:ratings] = params[:ratings]
+        end  
+        @filter_ratings = session[:ratings] unless session[:ratings] == nil
+      else
+        session[:ratings] = params[:ratings] unless params[:ratings] == nil
+        @filter_ratings = Movie.all_ratings
+    end
+    #logger.debug "el FILTRO es: #{@filter_ratings}"
+    @filter_ratings = Movie.all_ratings if @filter_ratings == nil
+  
+   session[:sort] = params[:sort]  unless params[:sort] == nil
+
+   if session[:sort]
+      sort = session[:sort]
+      @movies = Movie.filter(@filter_ratings.keys, sort)   
     else
-      @movies = Movie.all
+      @movies = Movie.filter(@filter_ratings.keys)
+    end 
+    session[:ratings] = @filter_ratings
+    
+    if session[:sort].present? && params[:sort].nil? || session[:ratings].present? && params[:ratings].nil?
+      redirect_to movies_path(ratings: session[:ratings], sort: session[:sort] ) and return
     end
   end
-
+ 
   def new
     # default: render 'new' template
   end
