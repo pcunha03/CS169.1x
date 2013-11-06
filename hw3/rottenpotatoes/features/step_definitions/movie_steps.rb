@@ -1,35 +1,32 @@
 Given /the following movies exist/ do |movies_table|
   movies_table.hashes.each do |movie|
-    Movie.create(movie)
-  end
-end
-
-# Make sure that one string (regexp) occurs before or after another one
-#   on the same page
-
-Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
-  #  ensure that that e1 occurs before e2.
-  #  page.body is the entire content of the page as a string.
-  flunk "Unimplemented"
-end
-
-
-When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
-  rating_list.split(/,?\s+/).each do |rating|
-    if uncheck == nil
-      step("I check \"ratings_#{rating}\"") 
-    else
-      step("I uncheck \"ratings_#{rating}\"")
+    if Movie.where(["title = ?", movie[:title]]).length == 0
+      Movie.create!(movie)
     end
   end
 end
 
-Then /I should (not )?see all movies with rating: (.*)/ do |notsee, rating_list|
-  condition = rating_list.split(/,?\s+/)
-  condition = Movie.all_ratings.delete_if { |x| condition.include?(x) } unless notsee == nil
-  Movie.find_all_by_rating(condition).count.should == page.all('table tbody tr').count
+Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
+  regexp = /#{e1}.*#{e2}/m
+  page.body.should =~ regexp
 end
 
-Then /I should see all the movies/ do
-  Movie.find(:all).count.should == page.all('table tbody tr').count
+When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
+  action_str = (uncheck == "un")? "uncheck" : "check"
+  
+  rating_list.gsub(/\s+/,"").split(',').each do |rating|
+    step_str = %Q{When I #{action_str} "ratings_#{rating}"}
+    steps step_str
+  end
+end
+
+Then /I should( not)? see movies having ratings: (.*)/ do | have, rating_list|
+  where_str =  "rating IN (?)"
+  rating_values = rating_list.gsub(/\s+/,"").split(',')
+  movie_list = Movie.where([where_str, rating_values])
+
+  movie_list.each do |m|
+    step_str = %Q{Then I should#{have} see "#{m.title}"}
+    steps step_str
+  end
 end
