@@ -65,7 +65,8 @@ Autograding
 From within the solutions/hw3/rottenpotatoes directory, run `bundle install`, `rake db:migrate`, and `rake db:test:prepare`.
 Clone the Ruby Autograder and run `rag/grade3 -a solutions/rottenpotatoes <student_solution>.tar.gz rag/hw3.yml` (note: hw3 autograder not yet merged into master of rag).
 
-Ruby Configuration
-===========
+
+**Ruby Configuration**
+
 To switch to ruby 2.0: `/bin/bash --login`
 To test ruby version active: `ruby --version`
